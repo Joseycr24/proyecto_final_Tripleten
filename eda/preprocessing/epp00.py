@@ -1,60 +1,45 @@
+import os
 import sys
+import argparse
 import pandas as pd
-from pathlib import Path
 
-project_root = Path(__file__).resolve().parent.parent.parent
-sys.path.insert(0, str(project_root))
+# Agregar la carpeta raíz del proyecto a sys.path
+#sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__),'..'))) 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+from functions.eda.explora_analysis import run_pipeline
 
-from functions.eda.explora_analysis import (
-    run_general_analysis,
-    descriptive_analysis,
-    run_visualization_analysis
-)
+# Argumentos por línea de comandos ----------------------------------------
+parser = argparse.ArgumentParser(description="Ejecutar EDA para los datasets")
+parser.add_argument('--periodo', type=str, required=True, help="Periodo en formato YYYYMM")
+args = parser.parse_args()
 
-datasets = {
-    "contract": "files/datasets/input/contract.csv",
-    "internet": "files/datasets/input/internet.csv",
-    "personal": "files/datasets/input/personal.csv",
-    "phone": "files/datasets/input/phone.csv"
-}
+# Información de inicio
+print(f"---------------------------------- \nComenzando proceso de EDA para el periodo: {args.periodo}\n----------------------------------")
 
-def process_dataset(name, path):
-    """
-    Procesa un dataset específico ejecutando el análisis exploratorio de datos (EDA).
+# Lista de datasets (puedes añadir más según sea necesario)
+datasets = [
+    {'ruta': 'files/datasets/input/contract.csv', 'nombre': 'contract'},
+    {'ruta': 'files/datasets/input/internet.csv', 'nombre': 'internet'},
+    {'ruta': 'files/datasets/input/personal.csv', 'nombre': 'personal'},
+    {'ruta': 'files/datasets/input/phone.csv', 'nombre': 'phone'}
+]
 
-    Esta función carga el dataset desde el archivo CSV proporcionado y ejecuta las funciones de EDA definidas
-    en el módulo `explora_analysis`. Realiza un análisis general, descriptivo y de visualización del dataset.
-
-    Args:
-    - name (str): Nombre del dataset, utilizado en los mensajes de salida para identificar el dataset.
-    - path (str): Ruta del archivo CSV que contiene el dataset a procesar.
-
-    Excepciones:
-    - FileNotFoundError: Si el archivo no se encuentra en la ruta especificada.
-    - Exception: Captura cualquier otro error que ocurra durante la lectura o el análisis del archivo.
-    """
-    print(f"\n=== Procesando dataset: {name} ===")
+# Procesar cada dataset ----------------------------------------
+for dataset in datasets:
+    dataset_path = dataset['ruta']
+    dataset_name = dataset['nombre']
     
-    try:
-        df = pd.read_csv(path)
-    except FileNotFoundError:
-        print(f"Error: El archivo '{path}' no se encontró. Verifica las rutas de los datasets.")
-        return
-    except Exception as e:
-        print(f"Error al leer el archivo '{path}': {e}")
-        return
+    # Verificar que el archivo exista
+    if not os.path.exists(dataset_path):
+        print(f"Error: El archivo {dataset_path} no existe.")
+        continue  # Pasar al siguiente dataset si el actual no existe
     
-    try:
-        run_general_analysis(df, name)
-        descriptive_analysis(df, name)
-        run_visualization_analysis(df, name)
-    except Exception as e:
-        print(f"Error durante el análisis del dataset '{name}': {e}")
+    # Cargar el dataset
+    print(f"Cargando dataset: {dataset_name}")
+    df = pd.read_csv(dataset_path)
+    
+    # Ejecutar el análisis EDA usando la función 'run_pipeline' o cualquier función que tengas
+    print(f"Ejecutando EDA para el dataset: {dataset_name}")
+    run_pipeline(df, dataset_name, periodo=args.periodo)  # Asumimos que run_pipeline acepta el periodo
 
-def main():
-        for name, path in datasets.items():
-            process_dataset(name, path)
-
-if __name__ == "__main__":
-    main()
-
+print("\n---------------------------------- \nProceso de EDA finalizado.\n----------------------------------")

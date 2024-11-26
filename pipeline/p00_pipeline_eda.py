@@ -1,62 +1,30 @@
 import os
 import sys
-from pathlib import Path
+import argparse
+sys.path.append(os.getcwd())  # Esto agrega la ruta actual al path
 
-# Agregar el directorio raíz del proyecto al sys.path
-project_root = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(project_root))
+import params as params  # Importar el archivo de configuración
 
-# Ahora importa las funciones desde su ubicación correcta
-from functions.eda.explora_analysis import (
-    run_general_analysis,
-    descriptive_analysis,
-    run_visualization_analysis
-)
+# Argumentos por línea de comandos ---------------------------------------- 
+parser = argparse.ArgumentParser(description="Pipeline para ejecutar epp00.py")
+parser.add_argument('--periodo', default=f'{params.periodo_YYYYMM}', help='Periodo en formato YYYYMM')
 
-def create_output_directory():
-    output_dir = Path("visualization/eda_preprocessing")
-    output_dir.mkdir(parents=True, exist_ok=True)  # Crear la carpeta si no existe
-    
-def main():
-    """
-    Ejecuta el pipeline de análisis exploratorio de datos (EDA) para el proyecto.
+# Parsear los argumentos
+try:
+    args = parser.parse_args()
+except argparse.ArgumentTypeError as e:
+    print(f"Invalid argument: {e}")
+    sys.exit(1)
 
-    Este script coordina el flujo de trabajo del análisis exploratorio de datos (EDA) ejecutando varios
-    pasos de procesamiento. En este caso, primero ejecuta el script 'epp00.py', que realiza un preprocesamiento
-    inicial de los datos. Este pipeline se puede expandir en el futuro para incluir pasos adicionales como limpieza de datos
-    o entrenamiento de modelos.
+# Información de inicio ---------------------------------------- 
+print(f"---------------------------------- \nComenzando proceso para periodo: {args.periodo}\n----------------------------------")
 
-    Pasos actuales:
-    - Ejecución del script de preprocesamiento: `epp00.py`
-    - Posibilidad de añadir más pasos (por ejemplo, limpieza de datos y modelado). 
+# Definir la extensión de ejecutables para Windows o Linux
+if params.sistema_operativo == 'Windows':
+    extension_binarios = ".exe"
+else:
+    extension_binarios = ""
 
-    Este archivo forma parte del pipeline para asegurar que todos los pasos de EDA se ejecuten correctamente
-    antes de proceder con otros análisis o el entrenamiento de modelos.
-    """
-    print("=== Iniciando el pipeline de EDA ===")
-    
-    # Definir la ruta del archivo de preprocesamiento
-    preprocessing_script = "eda/preprocessing/epp00.py"
-    
-    # Verificar si el archivo de preprocesamiento existe
-    if os.path.exists(preprocessing_script):
-        try:
-            # Ejecutar el script de preprocesamiento
-            result = os.system(f"python {preprocessing_script}")
-
-            # Verificar si el script se ejecutó correctamente
-            if result != 0:
-                print(f"El script {preprocessing_script} terminó con errores.")
-            else:
-                print(f"El script {preprocessing_script} se ejecutó correctamente.")
-        
-        except Exception as e:
-            print(f"Error al ejecutar el script de preprocesamiento: {e}")
-    
-    else:
-        print(f"Error: No se encuentra el archivo {preprocessing_script}")
-
-    print("=== Pipeline de EDA completado ===")
-
-if __name__ == "__main__":
-    main()
+# Ejecutar epp00.py ---------------------------------------- 
+# Aquí ejecutamos epp00.py, y le pasamos los parámetros de periodo si es necesario
+os.system(f"python{extension_binarios} eda/preprocessing/epp00.py --periodo {args.periodo}")
