@@ -26,5 +26,9 @@ else:
     extension_binarios = ""
 
 # Ejecutar epp00.py ---------------------------------------- 
-# Aquí ejecutamos epp00.py, y le pasamos los parámetros de periodo si es necesario
+# Aquí ejecutamos epp00.py, que es es preprocesamiento del EDA
 os.system(f"python{extension_binarios} eda/preprocessing/epp00.py --periodo {args.periodo}")
+
+# Ejecutar ep00.py ---------------------------------------- 
+# Aquí ejecutamos ep00.py, que es es procesamiento del EDA
+os.system(f"python{extension_binarios} eda/processing/ep00.py --periodo {args.periodo}")
